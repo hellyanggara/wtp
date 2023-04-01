@@ -9,12 +9,12 @@
 
   
   <title>{{ config('app.name', 'Laravel')}} | {{ $title }}</title>
-  <link rel="icon" href="{{ asset('img/logo putih.png') }}" type="image/x-icon">
+  <link rel="icon" href="{{ asset('img/logo.png') }}" type="image/x-icon">
   <!-- Fonts -->
   @include('layouts._style')
 </head>
 
-<body class="hold-transition sidebar-mini layout-fixed">
+<body class="hold-transition sidebar-mini layout-fixed text-sm">
   <div class="wrapper">
     <div class="preloader flex-column justify-content-center align-items-center">
       <img class="animation__shake" src="{{ asset('img/logokotak.png') }}" alt="AdminLTELogo" height="60" width="60">
@@ -23,24 +23,9 @@
     @if (Auth::check())
     @include('layouts.sidebar')
     @endif
-    <!-- Content Wrapper. Contains page content -->
     <div class="content-wrapper">
-      <!-- Content Header (Page header) -->
-      <!-- Main content -->
       @yield('content')
-      <!-- /.content -->
     </div>
-    <!-- /.content-wrapper -->
-
-    <!-- Control Sidebar -->
-    <aside class="control-sidebar control-sidebar-dark">
-      <!-- Control sidebar content goes here -->
-      <div class="p-3">
-        <h5>Title</h5>
-        <p>Sidebar content</p>
-      </div>
-    </aside>
-    <!-- /.control-sidebar -->
     @include('layouts.footer')
   </div>
 

@@ -3,8 +3,11 @@
 namespace App\Http\Controllers\Masters;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\UserStoreRequest;
+use App\Http\Requests\UserUpdateRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Gate;
 use Spatie\Permission\Models\Role;
 
@@ -13,7 +16,6 @@ class UserController extends Controller
     public function index(Request $request)
     {
         $this->authorize('administrator');
-        $title = 'User';
         
         if(Gate::allows('superadmin')){
             $users = User::when($request->has('archive'), function($query){
@@ -34,33 +36,36 @@ class UserController extends Controller
             })
             ->orderBy('name', 'asc')->get();
         }
-        return view('masters.users.index', compact('title','users'));
+        return view('masters.users.index',[
+            'title' => 'Daftar pengguna',
+            'users' => $users
+        ]);
     }
 
     public function create()
     {
         $this->authorize('administrator');
-        $title = 'Tambah User';
         if(Gate::allows('superadmin')){
             $roles = Role::whereNotIn('name', ['super'])->get();
         }elseif(Gate::allows('administrator')){
             $roles = Role::whereNotIn('name', ['super', 'admin'])->get();
         }
-        return view('masters.users.create',compact('title', 'roles'));
+        return view('masters.users.create',[
+            'title' => 'Tambah data pengguna',
+            'roles' => $roles,
+        ]);
     }
 
-    public function store(Request $request)
+    public function store(UserStoreRequest $request)
     {
         $this->authorize('administrator');
-        $userValidateData = $request->validate([
-            'name' => 'required',
-            'date_of_birth' => 'required',
-            'email' => 'required|email:dns',
-        ]);
-        $userValidateData['date_of_birth'] =date("Y-m-d",strtotime($request->date_of_birth));
-        $userValidateData['password'] = bcrypt(date("dmY",strtotime($request->date_of_birth)));
-        // dd($userValidateData);
-        $insert = User::create($userValidateData);
+        $validatedData = $request->validated();
+        $validatedData['birth_date'] =date("Y-m-d",strtotime($request->birth_date));
+        $validatedData['password'] = bcrypt(date("dmY",strtotime($request->birth_date)));
+        if($request->hasFile('image') ){
+            $validatedData['image'] = $request->file('image')->store('user-image');
+        } 
+        $insert = User::create($validatedData);
         $insert->assignRole('user');
         if($insert){
             return redirect()->route('masters.users.index')->with('success', 'User berhasil ditambahkan');
@@ -72,26 +77,30 @@ class UserController extends Controller
     public function edit($id)
     {
         $this->authorize('administrator');
-        $title = 'Edit User';
+        $title = 'Ubah Data Pengguna';
         $user = User::find($id);
         $roles = Role::whereNotIn('name', ['super', 'admin'])->get();
         return view('masters.users.edit', compact('title', 'user', 'roles'));
     }
 
-    public function update(Request $request, $id)
+    public function update(UserUpdateRequest $request, User $user)
     {
         $this->authorize('administrator');
-        $userValidateData = $request->validate([
-            'name' => 'required',
-            'date_of_birth' => 'required',
-            'email' => 'required|email:dns',
-        ]);
-        $userValidateData['date_of_birth'] =date("Y-m-d",strtotime($request->date_of_birth));
-        $update = User::where('id', $id)->update($userValidateData);
-        if($update){
-            return redirect()->route('masters.users.index')->with('success', 'Data user berhasil diedit');
+        $image = $user->image;
+        if($request->hasFile('image') ){
+            $path = 'storage/'.$image;
+            if(File::exists($path)){
+                File::delete($path);
+            }
+            $user->image = $request->file('image')->store('user-image');
+        }
+        $validatedData['birth_date'] =date("Y-m-d",strtotime($request->birth_date));
+        $user->update($validatedData);
+        $user->syncRoles($request->role_name);
+        if($user){
+            return redirect()->route('masters.users.index')->with('success', 'Data pengguna berhasil diubah');
         }else{
-            return redirect()->route('masters.users.index')->with('failed', 'Data user gagal diedit');
+            return redirect()->route('masters.users.index')->with('failed', 'Gagal mengubah data pengguna');
         }
     }
 
@@ -100,9 +109,9 @@ class UserController extends Controller
         $this->authorize('administrator');
         $delete = User::destroy($id);
         if($delete){
-            return redirect()->route('masters.users.index')->with('success', 'User berhasil dinonaktifkan');
+            return redirect()->route('masters.users.index')->with('success', 'Pengguna berhasil dinonaktifkan');
         }else{
-            return redirect()->route('masters.users.index')->with('failed', 'User gagal dinonaktifkan');
+            return redirect()->route('masters.users.index')->with('failed', 'Pengguna gagal dinonaktifkan');
         }
     }
 
@@ -112,7 +121,7 @@ class UserController extends Controller
         $user = User::onlyTrashed()->findOrFail($id);
         $user->restore();
 
-        return redirect()->route('masters.users.index')->with('success', 'User berhasil diaktifkan kembali');
+        return redirect()->route('masters.users.index')->with('success', 'Pengguna berhasil diaktifkan kembali');
     }
 
     public function delete_forever($id)
@@ -121,6 +130,6 @@ class UserController extends Controller
         $user = User::onlyTrashed()->findOrFail($id);
         $user->forceDelete();
 
-        return redirect()->route('masters.users.index')->with('success', 'User berhasil dihapus');
+        return redirect()->route('masters.users.index')->with('success', 'Pengguna berhasil dihapus');
     }
 }

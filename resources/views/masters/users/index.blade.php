@@ -1,186 +1,94 @@
 @extends('layouts.app')
 
 @section('content')
-<section class="content-header">
-    <div class="container-fluid">
-        <div class="row mb-2">
-            <div class="col-sm-6">
-                <h1>Daftar {{ $title }}</h1>
-            </div>
-            <div class="col-sm-6">
-                <ol class="breadcrumb float-sm-right">
-                    <li class="breadcrumb-item"><a href="#">Home</a></li>
-                    <li class="breadcrumb-item active">Master</li>
-                    <li class="breadcrumb-item active">User</li>
-                </ol>
-            </div>
-        </div>
-    </div>
-</section>
+@include('components.content-header', ['lvl1' => 'Master', 'lvl2' => $title])
 <section class="content">
-    @if (Session::has('success'))
-        <div class="alert alert-success alert-dismissible">
-            <button type="button" class="close" data-dismiss="alert"
-                aria-hidden="true">&times;</button>
-            <h5><i class="icon fas fa-check"></i> Success!</h5>
-            {{ Session::get('success') }}
-        </div>
-    @endif
-    @if (Session::has('failed'))
-        <div class="alert alert-danger alert-dismissible">
-            <button type="button" class="close" data-dismiss="alert"
-                aria-hidden="true">&times;</button>
-            <h5><i class="icon fas fa-check"></i> Failed!</h5>
-            {{ Session::get('failed') }}
-        </div>
-    @endif
     <div class="card">
         <div class="card-header">
             <a href="{{ route('masters.users.create') }}" class="btn btn-primary btn-sm">
-                <i class="fas fa-plus"></i> Tambah
+                <i class="fas fa-plus"></i> {{ __('Tambah') }}
             </a>
-            <a href="{{ request()->has('archive') ? route('masters.users.index') : route('masters.users.index', 'archive') }}" class="btn btn-{{ request()->has('archive') ? 'warning' : 'outline-warning' }} btn-sm float-right">
-                <i class="fas fa-trash"></i> Trash
+            <a href="{{ request()->has('archive') ? route('masters.users.index') : route('masters.users.index', 'archive') }}" class="btn btn-{{ request()->has('archive') ? 'dark' : 'light' }} btn-sm float-right">
+                <i class="fas fa-trash"></i> {{ __('Trash') }}
             </a>
         </div>
         <div class="card-body">
-            <table id="example1" class="table table-bordered table-striped">
+            <table id="example1" class="table table-bordered wrap table-striped projects">
                 <thead>
                     <tr>
-                        <th class="text-center" width="5%">No.</th>
-                        <th class="text-center">Nama</th>
-                        <th class="text-center">Email</th>
-                        <th class="text-center">Hak Akses</th>
-                        <th class="text-center" width="15%">Opsi</th>
+                        <th class="text-center" width="5%">{{ __('No.') }}</th>
+                        <th class="text-center">{{ __('Foto') }}</th>
+                        <th class="text-center">{{ __('Nama') }}</th>
+                        <th class="text-center">{{ __('Hak Akses') }}</th>
+                        <th class="text-center">{{ __('Tenant') }}</th>
+                        <th class="text-center">{{ __('No.Telepon') }}</th>
+                        <th class="text-center">{{ __('Email') }}</th>
+                        <th class="text-center">{{ __('Alamat') }}</th>
+                        <th class="text-center" width="15%">{{ __('Aksi') }}</th>
                     </tr>
                 </thead>
                 <tbody>
-                @foreach ($users as $key=>$user)
+                @foreach ($users as $user)
                     <tr>
-                        <td class="text-center">{{ $key+1 }}</td>
+                        <td class="text-center">{{ $loop->iteration }}</td>
+                        <td>
+                            <center>
+                                @if ($user->image != null)
+                                <img alt="Avatar" class="table-avatar" src="{{ asset('storage/'. $user->image) }}">
+                                @else
+                                <i class="fas fa-user"></i>
+                                @endif
+                            </center>
+                        </td>
                         <td>{{ $user->name }}</td>
-                        <td>{{ $user->email }}</td>
                         <td>
                             @foreach ($user->roles as $role)
-                                {{ $role->name }}
+                            {{ $role->name }}
                             @endforeach
                         </td>
+                        <td>{{ $user->tenants->name ?? '' }}</td>
+                        <td>{{ $user->phone }}</td>
+                        <td>{{ $user->email }}</td>
+                        <td>{{ $user->address }}</td>
                         <td class="text-center">
                             @if($user->trashed())
-                                <button type="button" class="btn btn-secondary btn-sm mb-2" data-toggle="modal" data-target="#modal-restore{{ $user->id }}">
-                                    <i class="fas fa-trash-restore"></i> Restore
-                                </button>
-                                <button type="button" class="btn btn-danger btn-sm mb-2" data-toggle="modal" data-target="#modal-delete-forever{{ $user->id }}">
-                                    <i class="fas fa-trash-alt"></i> Delete Forever
-                                </button>
+                                <form action="{{ route('masters.users.restore', [$user->id]) }}" method="post">
+                                    @csrf
+                                    @method('PUT')
+                                    <button type="button" class="btn btn-secondary btn-sm mb-2 restore_confirm" data-user="{{ $user->name }}">
+                                        <i class="fas fa-trash-restore"></i> {{ __('Kembalikan') }}
+                                    </button>
+                                </form>
+                                <form action="{{ route('masters.users.delete_forever', [$user->id]) }}" method="post">
+                                    @csrf
+                                    @method('PUT')
+                                    <button type="button" class="btn btn-danger btn-sm mb-2 delete_forever_confirm" data-user="{{ $user->name }}">
+                                        <i class="fas fa-trash-alt"></i> {{ __('Hapus Selamanya') }}
+                                    </button>
+                                </form>
                             @else
-                                <button type="button" class="btn btn-info btn-sm mb-2" data-toggle="modal" data-target="#modal-reset{{ $user->id }}">
-                                    <i class="fas fa-key">
-                                    </i> Reset Password
-                                </button>
+                                <form action="{{ route('masters.resetPassword.update', $user->id) }}" method="post">
+                                @csrf
+                                @method('PUT')
+                                    <button type="button" data-user="{{ $user->name }}" class="btn btn-info btn-sm mb-2 reset_confirm">
+                                        <i class="fas fa-key">
+                                        </i> {{ __('Reset Password') }}
+                                    </button>
+                                </form>
                                 <a href="{{ route('masters.users.edit',[$user->id]) }}" class="btn btn-warning btn-sm mb-2">
-                                    <i class="fas fa-pencil"></i> Ubah
+                                    <i class="fas fa-pencil"></i> {{ __('Ubah') }}
                                 </a>
-                                <button type="button" class="btn btn-danger btn-sm mb-2" data-toggle="modal" data-target="#modal-default{{ $user->id }}">
-                                    <i class="fas fa-trash">
-                                    </i> Hapus
-                                </button>
+                                <form action="{{ route('masters.users.destroy', [$user]) }}" method="post">
+                                @csrf
+                                {{ method_field('DELETE') }}
+                                    <button type="button" data-user="{{ $user->name }}" class="btn btn-danger btn-sm mb-2 delete_confirm">
+                                        <i class="fas fa-trash">
+                                        </i> {{ __('Hapus') }}
+                                    </button>
+                                </form>
                             @endif
                         </td>
                     </tr>
-                    <div class="modal fade" id="modal-reset{{ $user->id }}">
-                        <div class="modal-dialog">
-                            <form action="{{ route('masters.resetPassword.update', $user->id) }}" method="post">
-                            @csrf
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h4 class="modal-title">Konfirmasi Reset Password..!!</h4>
-                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                    </button>
-                                </div>
-                                <div class="modal-body">
-                                    <p>Apakah anda yakin akan mereset password {{ $user->name }}?</p>
-                                </div>
-                                <div class="modal-footer justify-content-between">
-                                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                                    <button type="submit" class="btn btn-primary">Reset</button>
-                                </div>
-                            </div>
-                            <!-- /.modal-content -->
-                            </form>
-                        </div>
-                    </div>
-                    <div class="modal fade" id="modal-default{{ $user->id }}">
-                        <div class="modal-dialog">
-                            <form action="{{ route('masters.users.destroy', [$user]) }}" method="post">
-                            @csrf
-                            {{ method_field('DELETE') }}
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h4 class="modal-title">Konfirmasi..!!</h4>
-                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                    </button>
-                                </div>
-                                <div class="modal-body">
-                                    <p>Apakah anda yakin akan menghapus data {{ $user->name }}?</p>
-                                </div>
-                                <div class="modal-footer justify-content-between">
-                                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                                    <button type="submit" class="btn btn-danger">Delete</button>
-                                </div>
-                            </div>
-                            <!-- /.modal-content -->
-                            </form>
-                        </div>
-                    </div>
-                    <div class="modal fade" id="modal-restore{{ $user->id }}">
-                        <div class="modal-dialog">
-                            <form action="{{ route('masters.users.restore', [$user->id]) }}" method="post">
-                            @csrf
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h4 class="modal-title">Konfirmasi..!!</h4>
-                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                    </button>
-                                </div>
-                                <div class="modal-body">
-                                    <p>Apakah anda yakin akan mengaktifkan data {{ $user->name }}?</p>
-                                </div>
-                                <div class="modal-footer justify-content-between">
-                                    <button type="button" class="btn btn-default" data-dismiss="modal">No</button>
-                                    <button type="submit" class="btn btn-primary">Yes</button>
-                                </div>
-                            </div>
-                            <!-- /.modal-content -->
-                            </form>
-                        </div>
-                    </div>
-                    <div class="modal fade" id="modal-delete-forever{{ $user->id }}">
-                        <div class="modal-dialog">
-                            <form action="{{ route('masters.users.delete_forever', [$user->id]) }}" method="post">
-                            @csrf
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h4 class="modal-title">Konfirmasi..!!</h4>
-                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                    </button>
-                                </div>
-                                <div class="modal-body">
-                                    <p>Apakah anda yakin akan menghapus selamanya data {{ $user->name }}?</p>
-                                </div>
-                                <div class="modal-footer justify-content-between">
-                                    <button type="button" class="btn btn-default" data-dismiss="modal">No</button>
-                                    <button type="submit" class="btn btn-danger">Yes</button>
-                                </div>
-                            </div>
-                            <!-- /.modal-content -->
-                            </form>
-                        </div>
-                    </div>
                 @endforeach
                 </tbody>
             </table>
@@ -188,3 +96,94 @@
     </div>
 </section>
 @endsection
+@push('script')
+    <script>
+        $('.delete_confirm').click(function(event) {
+            var form = $(this).closest("form");
+            var name = $(this).data("user");
+            event.preventDefault();
+            Swal.fire({
+                title: 'Apakah anda yakin?',
+                text: "Anda akan menghapus data "+name+"!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Ya, hapus!',
+                cancelButtonText: 'Tidak, batalkan'
+                }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }else if (result.isDismissed) {
+                    Swal.fire('Penghapusan dibatalkan', '', 'info')
+                }
+            })
+        });
+        
+        $('.reset_confirm').click(function(event) {
+            var form = $(this).closest("form");
+            var name = $(this).data("user");
+            event.preventDefault();
+            Swal.fire({
+                title: 'Apakah anda yakin?',
+                text: "Anda akan mereset password "+name+"!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Ya, reset!',
+                cancelButtonText: 'Tidak, batalkan'
+                }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }else if (result.isDismissed) {
+                    Swal.fire('Reset password dibatalkan', '', 'info')
+                }
+            })
+        });
+
+        $('.restore_confirm').click(function(event) {
+            var form = $(this).closest("form");
+            var name = $(this).data("user");
+            event.preventDefault();
+            Swal.fire({
+                title: 'Apakah anda yakin?',
+                text: "Anda akan mengaktifkan kembali data "+name+"!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Ya, aktifkan kembali!',
+                cancelButtonText: 'Tidak, batalkan'
+                }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }else if (result.isDismissed) {
+                    Swal.fire('Pengaktifan pengguna dibatalkan', '', 'info')
+                }
+            })
+        });
+        
+        $('.delete_forever_confirm').click(function(event) {
+            var form = $(this).closest("form");
+            var name = $(this).data("user");
+            event.preventDefault();
+            Swal.fire({
+                title: 'Apakah anda yakin?',
+                text: "Anda akan menghapus data "+name+"!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Ya, hapus!',
+                cancelButtonText: 'Tidak, batalkan'
+                }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }else if (result.isDismissed) {
+                    Swal.fire('Penghapusan pengguna dibatalkan', '', 'info')
+                }
+            })
+        });
+    </script>
+@endpush

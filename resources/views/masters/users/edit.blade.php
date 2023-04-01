@@ -1,112 +1,133 @@
 @extends('layouts.app')
 
 @section('content')
-<section class="content-header">
-    <div class="container-fluid">
-        <div class="row mb-2">
-            <div class="col-sm-6">
-                <h1 class="m-0">{{ $title }}</h1>
-            </div>
-            <div class="col-sm-6">
-                <ol class="breadcrumb float-sm-right">
-                    <li class="breadcrumb-item"><a href="{{ URL::to('home') }}">Dashboard</a></li>
-                    <li class="breadcrumb-item active">Master</li>
-                    <li class="breadcrumb-item active">Edit User</li>
-                </ol>
-            </div>
-        </div>
-    </div>
-</section>
+@include('components.content-header', ['lvl1' => 'Master', 'lvl2' => $title])
 <section class="content">
     <div class="container-fluid">
         <div class="row">
-            <div class="col-md-6">
-            @if (Session::has('success'))
-                <div class="alert alert-success alert-dismissible">
-                    <button type="button" class="close" data-dismiss="alert"
-                        aria-hidden="true">&times;</button>
-                    <h5><i class="icon fas fa-check"></i> Success!</h5>
-                    {{ Session::get('success') }}
-                </div>
-            @endif
-            @if (Session::has('failed'))
-                <div class="alert alert-danger alert-dismissible">
-                    <button type="button" class="close" data-dismiss="alert"
-                        aria-hidden="true">&times;</button>
-                    <h5><i class="icon fas fa-check"></i> Failed!</h5>
-                    {{ Session::get('failed') }}
-                </div>
-            @endif
+            <div class="col-md-12">
                 <div class="card card-primary">
                     <div class="card-header">
-                    <h3 class="card-title">Data</h3>
-                        {{-- <div class="card-tools">
-                            <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
-                            <i class="fas fa-minus"></i>
-                            </button>
-                        </div> --}}
+                    <h3 class="card-title">{{ __('Data Pengguna') }}</h3>
                     </div>
-                    <form action="{{ route('masters.users.update', [$user->id]) }}" method="post">
+                    <form action="{{ route('masters.users.update', [$user->id]) }}" method="post" autocomplete="off" enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
                         <div class="card-body">
-                            <div class="form-group">
-                                <label>Nama</label>
-                                <input type="text" name="name"
-                                    class="form-control @error('name') is-invalid @enderror"
-                                    placeholder="Masukkan Nama User" value="{{ old('name',$user->name) }}" autofocus>
-                                @error('name')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
-                            </div>
-                            <div class="form-group">
-                                <label>Tanggal Lahir</label>
-                                <div class="input-group date" id="reservationdate" data-target-input="nearest">
-                                    <input name="date_of_birth" type="text" class="form-control datetimepicker-input @error('date_of_birth') is-invalid @enderror" data-target="#reservationdate" value="{{ $user->date_of_birth ? old('date_of_birth', date("d-m-Y", strtotime($user->date_of_birth))) : '' }}" placeholder="Pilih tanggal"/>
-                                    <div class="input-group-append" data-target="#reservationdate"
-                                        data-toggle="datetimepicker">
-                                        <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>{{ __('Nama') }}</label>
+                                        <input type="text" name="name"
+                                            class="form-control @error('name') is-invalid @enderror"
+                                            placeholder="Masukkan Nama User" value="{{ old('name',$user->name) }}" autofocus>
+                                        @error('name')
+                                            <span class="invalid-feedback" role="alert">
+                                                <strong>{{ $message }}</strong>
+                                            </span>
+                                        @enderror
                                     </div>
-                                    @error('date_of_birth')
-                                        <span class="invalid-feedback" role="alert">
-                                            <strong>{{ $message }}</strong>
-                                        </span>
-                                    @enderror
+                                    <div class="form-group">
+                                        <label>{{ __('Tanggal Lahir') }}</label>
+                                        <div class="input-group date" id="reservationdate" data-target-input="nearest">
+                                            <input name="birth_date" type="text" class="form-control datetimepicker-input @error('birth_date') is-invalid @enderror" data-target="#reservationdate" value="{{ old('birth_date', $user->birth_date ? date("d-m-Y", strtotime($user->birth_date)): '') }}" placeholder="Pilih tanggal"/>
+                                            <div class="input-group-append" data-target="#reservationdate"
+                                                data-toggle="datetimepicker">
+                                                <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                                            </div>
+                                            @error('birth_date')
+                                                <span class="invalid-feedback" role="alert">
+                                                    <strong>{{ $message }}</strong>
+                                                </span>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>{{ __('Email') }}</label>
+                                        <input type="email" name="email"
+                                            class="form-control @error('email') is-invalid @enderror"
+                                            placeholder="Masukkan Email User" value="{{ old('email', $user->email) }}" autofocus>
+                                        @error('email')
+                                            <span class="invalid-feedback" role="alert">
+                                                <strong>{{ $message }}</strong>
+                                            </span>
+                                        @enderror
+                                    </div>
+                                    <div class="form-group">
+                                        <label>{{ __('No. Telepon') }}</label>
+                                        <input type="text" name="phone" class="form-control @error('phone') is-invalid @enderror" placeholder="Masukkan No. Telepon" value="{{ old('phone', $user->phone) }}">
+                                        @error('phone')
+                                            <span class="invalid-feedback" role="alert">
+                                                <strong>{{ $message }}</strong>
+                                            </span>
+                                        @enderror
+                                    </div>
+                                    <div class="form-group">
+                                        <label>{{ __('Alamat') }}</label>
+                                        <textarea name="address" class="form-control @error('address') is-invalid @enderror" placeholder="Masukkan alamat">{{ old('address', $user->address) }}</textarea>
+                                        @error('address')
+                                            <span class="invalid-feedback" role="alert">
+                                                <strong>{{ $message }}</strong>
+                                            </span>
+                                        @enderror
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="form-group">
-                                <label>Email</label>
-                                <input type="email" name="email"
-                                    class="form-control @error('email') is-invalid @enderror"
-                                    placeholder="Masukkan Email User" value="{{ old('email', $user->email) }}" autofocus>
-                                @error('email')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
-                            </div>
-                            <div class="form-group">
-                                <label>Hak Akses</label>
-                                <select class="form-control select2 @error('role_id') is-invalid @enderror"
-                                    name="role_id" style="width: 100%">
-                                    @foreach ($roles as $role)
-                                        <option value="{{ $role->id }}"
-                                            {{ old('role_id', $user->role_id) == $role->id ? 'selected' : '' }}>
-                                            {{ strtoupper($role->name) }}</option>
-                                    @endforeach
-                                </select>
-                                @error('role_id')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
+                                <div class="col-md-6">
+                                    <center>
+                                        <div class="form-group">
+                                            <label>{{ __('Foto') }}</label>
+                                                <div class="fileupload fileupload-new" data-provides="fileupload">
+                                                    <div class="fileupload-new thumbnail"  style="width: 200px; height: 200px;">
+                                                        <img src="{{ asset('storage/'. $user->image) }}" alt="" />
+                                                    </div>
+                                                    <div class="fileupload-preview fileupload-exists thumbnail"
+                                                        style="max-width: 200px; max-height: 200px; line-height: 20px;"></div>
+                                                    <div>
+                                                        <span class="btn btn-default btn-file">
+                                                            <span class="fileupload-new"><i class="fa fa-camera"></i> {{ __('Tambah Foto') }}</span>
+                                                            <span class="fileupload-exists"><i class="fa fa-undo"></i>
+                                                                {{ __('Ubah') }}</span>
+                                                            <input type="file" class="default @error('image') is-invalid @enderror" name="image" />
+                                                            @error('image')
+                                                                <span class="invalid-feedback" role="alert">
+                                                                    <strong>{{ $message }}</strong>
+                                                                </span>
+                                                            @enderror
+                                                        </span>
+                                                        <a href="#" class="btn btn-danger fileupload-exists"
+                                                            data-dismiss="fileupload"><i class="fa fa-trash"></i> {{ __('Batalkan') }}</a>
+                                                    </div>
+                                                </div>
+                                                @error('price')
+                                                    <span class="invalid-feedback" role="alert">
+                                                        <strong>{{ $message }}</strong>
+                                                    </span>
+                                                @enderror
+                                        </div>
+                                    </center>
+                                    <div class="form-group">
+                                        <label>{{ __('Hak Akses') }}</label>
+                                        <select class="form-control select2 @error('role_name') is-invalid @enderror"
+                                            name="role_name" style="width: 100%">
+                                            <option value="">--Silahkan Pilih--</option>
+                                            @foreach ($roles as $role)
+                                                <option value="{{ $role->id }}"
+                                                    {{ $user->getRoleNames()[0] == $role->name ? 'selected' : '' }}>
+                                                    {{ ucfirst($role->name) }}</option>
+                                            @endforeach
+                                        </select>
+                                        @error('role_name')
+                                            <span class="invalid-feedback" role="alert">
+                                                <strong>{{ $message }}</strong>
+                                            </span>
+                                        @enderror
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div class="card-footer">
-                            <a href="{{ route('masters.users.index') }}" class="btn btn-danger"><i class="fas fa-ban"></i> Batal</a>
-                            <button type="submit" class="btn btn-primary float-right"><i class="fas fa-save"></i> Simpan</button>
+                            <a href="{{ route('masters.users.index') }}" class="btn btn-danger"><i class="fas fa-ban"></i> {{ __('Batal') }}</a>
+                            <button type="button" class="btn btn-primary float-right edit_confirm"><i class="fas fa-save"></i> {{ __('Ubah') }}</button>
                         </div>
                     </form>
                 </div>
@@ -115,15 +136,28 @@
         </div>
     </div>
 </section>
-<script>
-    $(function() {
-        $('.select2').select2();
-        $('#reservationdatetime').datetimepicker({
-            icons: {
-                time: 'far fa-clock'
-            },
-            format: 'DD-MM-YYYY HH:mm'
-        });
-    });
-</script>
 @endsection
+@push('script')
+    <script>
+        $('.edit_confirm').click(function(event) {
+            var form =  $(this).closest("form");
+            event.preventDefault();
+            Swal.fire({
+                title: 'Apakah anda yakin?',
+                text: "Anda akan mengubah data ini!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Ya, ubah!',
+                cancelButtonText: 'Tidak, Batalkan!'
+                }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }else if (result.isDismissed) {
+                    Swal.fire('Perubahan dibatalkan', '', 'info')
+                }
+            })
+        });
+    </script>
+@endpush

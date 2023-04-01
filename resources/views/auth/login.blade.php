@@ -10,7 +10,7 @@
 
   <link rel="stylesheet" href="{{ asset('fonts/googleapis.css') }}">
   <title>{{ config('app.name', 'Laravel')}} | Login</title>
-  <link rel="icon" href="{{ asset('img/logo putih.png') }}" type="image/x-icon">
+  <link rel="icon" href="{{ asset('img/logo.png') }}" type="image/x-icon">
   <!-- Fonts -->
   @include('layouts._style')
 </head>

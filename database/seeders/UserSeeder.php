@@ -18,7 +18,7 @@ class UserSeeder extends Seeder
         $super = User::create([
             'name' => 'Helly Anggara Suwignyo',
             'email' => 'helly.anggara@justnother.com',
-            'date_of_birth' => '1986-06-08',
+            'birth_date' => '1986-06-08',
             'password' => bcrypt('Helsa86as'),
         ]);
         $super->assignRole('super');

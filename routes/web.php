@@ -34,10 +34,10 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('changePassword', [ChangePasswordController::class, 'update'])->name('changePassword.update');
     Route::group(['middleware' => ['role:admin|super']], function () {
         Route::group(['prefix' => 'masters', 'as' => 'masters.'], function(){
-            Route::post('users/{id}/restore', [UserController::class, 'restore'])->name('users.restore');
-            Route::post('users/{id}/delete_forever', [UserController::class, 'delete_forever'])->name('users.delete_forever');
+            Route::put('users/{id}/restore', [UserController::class, 'restore'])->name('users.restore');
+            Route::put('users/{id}/delete_forever', [UserController::class, 'delete_forever'])->name('users.delete_forever');
             Route::resource('users', UserController::class)->except('show');
-            Route::post('resetPassword/{id}', [ResetPasswordController::class, 'update'])->name('resetPassword.update');
+            Route::put('resetPassword/{id}', [ResetPasswordController::class, 'update'])->name('resetPassword.update');
         });
     });
 });
